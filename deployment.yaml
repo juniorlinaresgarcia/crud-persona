@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-persona
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crud-persona
+  template:
+    metadata:
+      labels:
+        app: crud-persona
+    spec:
+      containers:
+        - name: crud-persona
+          image: acrmchdev.azurecr.io/crud-persona:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+            - name: QUARKUS_MONGODB_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: connectionString
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-persona-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: crud-persona
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
